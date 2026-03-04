@@ -1,12 +1,27 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Sun, Moon } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Sun, Moon, LogOut, User } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
 import { useTheme } from "@/components/ThemeProvider";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/");
+  };
 
   return (
     <motion.nav
@@ -34,9 +49,36 @@ const Navbar = () => {
           >
             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </button>
-          <Link to="/profile" className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-display font-semibold hover:opacity-90 transition-opacity">
-            My Profile
-          </Link>
+          {isAuthenticated && user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2 border-border">
+                  <User className="w-4 h-4" />
+                  <span className="max-w-[120px] truncate">{user.full_name || user.email}</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link to="/profile" className="cursor-pointer">
+                    My Profile
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive focus:text-destructive">
+                  <LogOut className="mr-2 w-4 h-4" />
+                  Sign out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Link to="/sign-in" className="px-4 py-2 rounded-lg border border-border text-sm font-display font-medium hover:bg-secondary transition-colors">
+                Sign in
+              </Link>
+              <Link to="/sign-up" className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-display font-semibold hover:opacity-90 transition-opacity">
+                Sign up
+              </Link>
+            </>
+          )}
         </div>
 
         <button
@@ -71,9 +113,28 @@ const Navbar = () => {
             {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             {theme === "dark" ? "Light Mode" : "Dark Mode"}
           </button>
-          <Link to="/profile" className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-display font-semibold text-center">
-            My Profile
-          </Link>
+          {isAuthenticated && user ? (
+            <>
+              <Link to="/profile" className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-display font-semibold text-center">
+                My Profile
+              </Link>
+              <button
+                onClick={() => { setOpen(false); handleLogout(); }}
+                className="w-full py-2 rounded-lg border border-destructive text-destructive text-sm font-display font-medium"
+              >
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/sign-in" className="w-full py-2 rounded-lg border border-border text-sm font-display font-medium text-center" onClick={() => setOpen(false)}>
+                Sign in
+              </Link>
+              <Link to="/sign-up" className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-display font-semibold text-center" onClick={() => setOpen(false)}>
+                Sign up
+              </Link>
+            </>
+          )}
         </motion.div>
       )}
     </motion.nav>

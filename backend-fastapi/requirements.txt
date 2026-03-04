@@ -5,3 +5,7 @@ psycopg[binary]
 pydantic-settings
 python-multipart
 email-validator
+python-jose[cryptography]
+passlib[bcrypt]
+httpx
+google-auth

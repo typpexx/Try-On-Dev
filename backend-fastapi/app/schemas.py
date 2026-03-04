@@ -2,7 +2,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, ConfigDict, EmailStr
 
-from app.models import BodyType, TryOnStatus, UserStatus
+from app.models import BodyType, SubscriptionStatus, TryOnStatus, UserRole, UserStatus
 
 
 class HealthResponse(BaseModel):
@@ -41,6 +41,9 @@ class BrandOut(BrandBase):
 class UserBase(BaseModel):
     full_name: str
     email: EmailStr
+    role: UserRole = UserRole.USER
+    api_key: str | None = None
+    subscription_status: SubscriptionStatus = SubscriptionStatus.STARTER
     body_type: BodyType = BodyType.M
     height_cm: float = 170
     weight_kg: float = 65
@@ -55,6 +58,9 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     full_name: str | None = None
     email: EmailStr | None = None
+    role: UserRole | None = None
+    api_key: str | None = None
+    subscription_status: SubscriptionStatus | None = None
     body_type: BodyType | None = None
     height_cm: float | None = None
     weight_kg: float | None = None
@@ -66,6 +72,28 @@ class UserOut(UserBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
     created_at: datetime
+
+
+# Auth schemas
+class RegisterRequest(BaseModel):
+    email: EmailStr
+    password: str
+    full_name: str
+
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class GoogleLoginRequest(BaseModel):
+    id_token: str
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserOut
 
 
 class TryOnCreate(BaseModel):

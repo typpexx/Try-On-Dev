@@ -19,6 +19,17 @@ class UserStatus(str, enum.Enum):
     SUSPENDED = "suspended"
 
 
+class UserRole(str, enum.Enum):
+    USER = "user"
+    ADMIN = "admin"
+
+
+class SubscriptionStatus(str, enum.Enum):
+    STARTER = "starter"
+    PRO = "pro"
+    ENTERPRISE = "enterprise"
+
+
 class TryOnStatus(str, enum.Enum):
     COMPLETED = "completed"
     PROCESSING = "processing"
@@ -47,12 +58,19 @@ class User(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, index=True)
     full_name: Mapped[str] = mapped_column(String(120), nullable=False)
     email: Mapped[str] = mapped_column(String(255), unique=True, nullable=False, index=True)
+    password_hash: Mapped[str | None] = mapped_column(String(255), nullable=True)  # null for Google-only users
+    role: Mapped[UserRole] = mapped_column(Enum(UserRole), default=UserRole.USER)
+    api_key: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    subscription_status: Mapped[SubscriptionStatus] = mapped_column(
+        Enum(SubscriptionStatus), default=SubscriptionStatus.STARTER
+    )
     body_type: Mapped[BodyType] = mapped_column(Enum(BodyType), default=BodyType.M)
     height_cm: Mapped[float] = mapped_column(Float, default=170)
     weight_kg: Mapped[float] = mapped_column(Float, default=65)
     photo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     status: Mapped[UserStatus] = mapped_column(Enum(UserStatus), default=UserStatus.ACTIVE)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    google_id: Mapped[str | None] = mapped_column(String(128), nullable=True, unique=True, index=True)  # for Google auth
 
     try_ons: Mapped[list["TryOnRecord"]] = relationship(back_populates="user")
 
