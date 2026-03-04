@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fashion Try-On Options</title>
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Extension Settings</h1>
+      <p class="sub">Manage selectors and active brands for DOM injection.</p>
+
+      <section>
+        <label class="label">Brand selector map (JSON)</label>
+        <textarea id="selectors" rows="12"></textarea>
+      </section>
+
+      <section>
+        <label class="label">Active brand domains (comma separated)</label>
+        <input id="activeDomains" type="text" placeholder="zara.com,gucci.com,fashionnova.com" />
+      </section>
+
+      <button id="save">Save Settings</button>
+      <p id="status" class="status"></p>
+    </main>
+    <script src="options.js"></script>
+  </body>
+</html>

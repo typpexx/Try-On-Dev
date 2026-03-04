@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fashion Try-On</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <h1>Fashion Try-On</h1>
+      <p class="sub">Chrome extension control center</p>
+
+      <label class="row">
+        <span>Enable extension</span>
+        <input id="enabled" type="checkbox" />
+      </label>
+
+      <label class="label" for="apiEndpoint">API endpoint</label>
+      <input id="apiEndpoint" type="text" placeholder="https://api.tryon.ai/v1/generate" />
+
+      <label class="label" for="apiKey">API key</label>
+      <input id="apiKey" type="password" placeholder="Optional bearer token" />
+
+      <div class="actions">
+        <button id="saveBtn">Save</button>
+        <button id="openOptions" class="ghost">Options</button>
+      </div>
+      <p id="status" class="status"></p>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

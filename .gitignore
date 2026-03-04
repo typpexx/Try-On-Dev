@@ -1,0 +1,58 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Node / JavaScript
+node_modules/
+.pnpm-store/
+.npm/
+.yarn/
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+.svelte-kit/
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Vite
+.vite/
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.venv/
+venv/
+env/
+ENV/
+.eggs/
+*.egg-info/
+pip-wheel-metadata/
+
+# IDE / Editor
+.idea/
+.vscode/
+

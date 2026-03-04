@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Virtual Fashion Try-On",
+  "description": "Detect product images on fashion stores and launch AI virtual try-ons.",
+  "version": "1.0.0",
+  "permissions": ["storage", "activeTab", "scripting", "tabs"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Fashion Try-On"
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
