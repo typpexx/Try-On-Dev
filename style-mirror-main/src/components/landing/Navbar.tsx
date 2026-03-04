@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Sun, Moon, LogOut, User } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { googleLogout } from "@react-oauth/google";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -19,6 +20,11 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    try {
+      googleLogout();
+    } catch {
+      // ignore if Google OAuth not loaded
+    }
     logout();
     navigate("/");
   };
