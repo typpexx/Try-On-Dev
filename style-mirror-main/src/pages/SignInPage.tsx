@@ -106,22 +106,22 @@ export default function SignInPage() {
               </div>
               <div className="flex justify-center [&>div]:!w-full [&>div>div]:!w-full [&>div>div]:!justify-center">
                 <GoogleLogin
-              onSuccess={(credentialResponse) => {
-                if (credentialResponse.credential) {
-                  handleGoogleSuccess(credentialResponse.credential);
-                }
-              }}
-              onError={() => {
-                toast({
-                  title: "Google sign-in failed",
-                  description: "Could not sign in with Google.",
-                  variant: "destructive",
-                });
-              }}
-              theme="filled_black"
-              size="large"
-              text="continue_with"
-              width="100%"
+                  onSuccess={(credentialResponse) => {
+                    if (credentialResponse.credential) {
+                      handleGoogleSuccess(credentialResponse.credential);
+                    }
+                  }}
+                  onError={() => {
+                    toast({
+                      title: "Google sign-in failed",
+                      description: "Could not sign in with Google.",
+                      variant: "destructive",
+                    });
+                  }}
+                  theme="filled_black"
+                  size="large"
+                  text="continue_with"
+                  width="100%"
                 />
               </div>
             </>

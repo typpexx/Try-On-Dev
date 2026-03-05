@@ -27,14 +27,27 @@ Docs: `http://localhost:8000/docs`
 
 ## Local Start (without Docker)
 
+**Windows (PowerShell):**
+```powershell
+cd backend-fastapi
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+copy .env.example .env
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+**macOS/Linux:**
 ```bash
 cd backend-fastapi
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env
-uvicorn app.main:app --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
+
+Always **activate the venv** before running uvicorn so dependencies (e.g. `psycopg`) are found. Use port **8000** (not 80001).
 
 Make sure `DATABASE_URL` in `.env` points to a running PostgreSQL instance.
 
@@ -70,7 +83,13 @@ Users have: `email`, `full_name`, `role`, `api_key`, `subscription_status` (star
 
 ## Existing database
 
-If you already have a `users` table from before auth, run the SQL in `migrations/add_auth_columns.sql` against your database to add the new columns.
+If you already have a `users` table from before auth, add the new columns by running (with venv activated):
+
+```powershell
+python run_migrate_auth_columns.py
+```
+
+Or run the SQL in `migrations/add_auth_columns.sql` manually against your database.
 
 ## Notes
 

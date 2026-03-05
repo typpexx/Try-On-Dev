@@ -1,17 +1,20 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
 class Settings(BaseSettings):
-    app_name: str = "Fashion Try-On API"
-    environment: str = "development"
-    api_v1_prefix: str = "/api/v1"
-    database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/fashion_tryon"
-    backend_cors_origins: str = "http://localhost:5173,http://localhost:5174,http://localhost:8080,http://localhost:8081,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:8080,http://127.0.0.1:8081"
+    app_name: str = os.getenv("APP_NAME")
+    environment: str = os.getenv("ENVIRONMENT")
+    api_v1_prefix: str = os.getenv("API_V1_PREFIX")
+    database_url: str = os.getenv("DATABASE_URL")
+    backend_cors_origins: str = os.getenv("BACKEND_CORS_ORIGINS")
     # Auth
-    secret_key: str = "change-me-in-production-use-long-random-string"
-    jwt_algorithm: str = "HS256"
+    secret_key: str = os.getenv("SECRET_KEY")
+    jwt_algorithm: str = os.getenv("JWT_ALGORITHM")
     jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
-    google_client_id: str = ""  # Set in .env for Google Sign-In verification
+    google_client_id: str = os.getenv("GOOGLE_CLIENT_ID")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
