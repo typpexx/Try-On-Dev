@@ -6,7 +6,7 @@ class Settings(BaseSettings):
     environment: str = "development"
     api_v1_prefix: str = "/api/v1"
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/fashion_tryon"
-    backend_cors_origins: str = "http://localhost:5173,http://localhost:5174"
+    backend_cors_origins: str = "http://localhost:5173,http://localhost:5174,http://localhost:8080,http://localhost:8081,http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:8080,http://127.0.0.1:8081"
     # Auth
     secret_key: str = "change-me-in-production-use-long-random-string"
     jwt_algorithm: str = "HS256"

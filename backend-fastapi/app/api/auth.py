@@ -74,21 +74,26 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 
 @router.post("/google", response_model=TokenResponse)
 def google_login(payload: GoogleLoginRequest, db: Session = Depends(get_db)):
-    if not settings.google_client_id:
+    if not (getattr(settings, "google_client_id", None) or "").strip():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Google Sign-In is not configured.",
+            detail="Google Sign-In is not configured. Set GOOGLE_CLIENT_ID in backend .env",
         )
     try:
         idinfo = id_token.verify_oauth2_token(
             payload.id_token,
             google_requests.Request(),
-            settings.google_client_id,
+            settings.google_client_id.strip(),
         )
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid Google token.",
+        ) from e
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Google token verification failed: {str(e)}",
         ) from e
     google_id = idinfo.get("sub")
     email = idinfo.get("email")
@@ -98,31 +103,39 @@ def google_login(payload: GoogleLoginRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Google account must have an email.",
         )
-    user = db.scalar(select(User).where(User.google_id == google_id))
-    if not user:
-        user = db.scalar(select(User).where(User.email == email))
-        if user:
-            user.google_id = google_id
-            user.full_name = user.full_name or name
-            db.commit()
-            db.refresh(user)
-        else:
-            user = User(
-                email=email,
-                full_name=name,
-                google_id=google_id,
-                password_hash=None,
+    try:
+        user = db.scalar(select(User).where(User.google_id == google_id))
+        if not user:
+            user = db.scalar(select(User).where(User.email == email))
+            if user:
+                user.google_id = google_id
+                user.full_name = user.full_name or name
+                db.commit()
+                db.refresh(user)
+            else:
+                user = User(
+                    email=email,
+                    full_name=name,
+                    google_id=google_id,
+                    password_hash=None,
+                )
+                db.add(user)
+                db.commit()
+                db.refresh(user)
+        if user.status.value != "active":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Account is inactive.",
             )
-            db.add(user)
-            db.commit()
-            db.refresh(user)
-    if user.status.value != "active":
+        access_token = create_access_token(subject=user.id)
+        return TokenResponse(access_token=access_token, user=user_to_out(user))
+    except HTTPException:
+        raise
+    except Exception as e:
         raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Account is inactive.",
-        )
-    access_token = create_access_token(subject=user.id)
-    return TokenResponse(access_token=access_token, user=user_to_out(user))
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Login failed: {str(e)}",
+        ) from e
 
 
 def _get_bearer_token(authorization: str | None = Header(None)) -> str | None:
