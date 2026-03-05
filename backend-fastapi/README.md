@@ -72,6 +72,12 @@ All endpoints are under: `/api/v1`
 - `POST /api/v1/auth/google` — body: `{ "id_token" }` (Google Sign-In)
 - `GET /api/v1/auth/me` — header: `Authorization: Bearer <token>`
 
+### Payments (Stripe)
+
+- `POST /api/v1/payments/create-checkout-session` — authenticated, creates hosted Stripe Checkout session.
+- `POST /api/v1/payments/create-billing-portal-session` — authenticated, opens Stripe Billing Portal for subscription management.
+- `POST /api/v1/payments/webhook` — Stripe webhook endpoint (signature verified).
+
 ## User model (auth)
 
 Users have: `email`, `full_name`, `role`, `api_key`, `subscription_status` (starter/pro/enterprise), `status` (active/inactive/suspended), `created_at`, plus optional `password_hash`, `google_id` for auth.
@@ -80,6 +86,24 @@ Users have: `email`, `full_name`, `role`, `api_key`, `subscription_status` (star
 
 - `SECRET_KEY` — used for JWT signing (set in production).
 - `GOOGLE_CLIENT_ID` — Google OAuth 2.0 Client ID (Web) for Google Sign-In. Create at [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+- `STRIPE_SECRET_KEY` — Stripe secret key (`sk_test_...` / `sk_live_...`).
+- `STRIPE_WEBHOOK_SECRET` — webhook signing secret (`whsec_...`).
+- `STRIPE_PRICE_ID_PRO` / `STRIPE_PRICE_ID_PRO_YEARLY` — Stripe recurring price IDs.
+
+## Stripe setup (secure)
+
+1. Create Product + recurring Prices in Stripe Dashboard and copy `price_...` IDs.
+2. Set Stripe env variables in `.env`.
+3. Start Stripe CLI forwarding:
+   ```bash
+   stripe listen --forward-to localhost:8000/api/v1/payments/webhook
+   ```
+   Copy the printed `whsec_...` into `STRIPE_WEBHOOK_SECRET`.
+4. Test checkout and webhook:
+   ```bash
+   stripe trigger checkout.session.completed
+   ```
+5. Never expose `STRIPE_SECRET_KEY` to frontend; only send users to Stripe-hosted Checkout URLs returned by backend.
 
 ## Existing database
 
@@ -90,6 +114,12 @@ python run_migrate_auth_columns.py
 ```
 
 Or run the SQL in `migrations/add_auth_columns.sql` manually against your database.
+
+If you already had a `users` table before Stripe fields were added, run:
+
+```powershell
+python run_migrate_stripe_columns.py
+```
 
 ## Notes
 

@@ -80,7 +80,7 @@ const Navbar = () => {
               <Link to="/sign-in" className="px-4 py-2 rounded-lg border border-border text-sm font-display font-medium hover:bg-secondary transition-colors">
                 Sign in
               </Link>
-              <Link to="/sign-up" className="px-5 py-2 rounded-lg bg-primary text-primary-foreground text-sm font-display font-semibold hover:opacity-90 transition-opacity">
+              <Link to="/sign-up" className="px-4 py-2 rounded-lg border border-border text-sm font-display font-medium hover:bg-secondary transition-colors">
                 Sign up
               </Link>
             </>
@@ -136,7 +136,7 @@ const Navbar = () => {
               <Link to="/sign-in" className="w-full py-2 rounded-lg border border-border text-sm font-display font-medium text-center" onClick={() => setOpen(false)}>
                 Sign in
               </Link>
-              <Link to="/sign-up" className="w-full py-2 rounded-lg bg-primary text-primary-foreground text-sm font-display font-semibold text-center" onClick={() => setOpen(false)}>
+              <Link to="/sign-up" className="w-full py-2 rounded-lg border border-border text-sm font-display font-medium text-center" onClick={() => setOpen(false)}>
                 Sign up
               </Link>
             </>

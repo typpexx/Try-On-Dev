@@ -31,7 +31,6 @@ export async function register(
   password: string,
   fullName: string
 ): Promise<TokenResponse> {
-  console.log(email, password, fullName);
   const res = await fetch(`${API_V1}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -75,6 +74,29 @@ export async function getMe(token: string): Promise<AuthUser> {
     headers: { Authorization: `Bearer ${token}` },
   });
   if (!res.ok) throw new Error("Session expired");
+  return res.json();
+}
+
+/** Create Stripe Checkout session for subscription. Returns redirect URL. Requires auth. */
+export async function createCheckoutSession(
+  token: string,
+  options: { plan_id?: string; success_url?: string; cancel_url?: string } = {}
+): Promise<{ url: string }> {
+  if (!token) {
+    throw new Error("Please sign in before starting checkout.");
+  }
+  const res = await fetch(`${API_V1}/payments/create-checkout-session`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(options),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.detail || "Could not start checkout");
+  }
   return res.json();
 }
 

@@ -1,8 +1,14 @@
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { createCheckoutSession } from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const plans = [
   {
+    id: "starter",
     name: "Starter",
     price: "Free",
     period: "14-day trial",
@@ -18,6 +24,7 @@ const plans = [
     highlighted: false,
   },
   {
+    id: "pro",
     name: "Pro",
     price: "$299",
     period: "/month",
@@ -35,6 +42,7 @@ const plans = [
     highlighted: true,
   },
   {
+    id: "enterprise",
     name: "Enterprise",
     price: "Custom",
     period: "tailored pricing",
@@ -55,6 +63,57 @@ const plans = [
 ];
 
 const Pricing = () => {
+  const { token, isAuthenticated } = useAuth();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isLoadingPlan, setIsLoadingPlan] = useState<string | null>(null);
+
+  const handlePlanAction = async (planId: string) => {
+    if (planId === "starter") {
+      navigate(isAuthenticated ? "/try-on" : "/sign-up");
+      return;
+    }
+
+    if (planId === "enterprise") {
+      window.location.href = "mailto:sales@tryon.ai?subject=Enterprise%20Plan%20Inquiry";
+      return;
+    }
+
+    if (!isAuthenticated || !token) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in before upgrading to Pro.",
+        variant: "destructive",
+      });
+      navigate("/sign-in");
+      return;
+    }
+
+    setIsLoadingPlan(planId);
+    try {
+      const successUrl = `${window.location.origin}/profile?subscription=success`;
+      const cancelUrl = `${window.location.origin}/#pricing`;
+      const { url } = await createCheckoutSession(token, {
+        plan_id: planId,
+        success_url: successUrl,
+        cancel_url: cancelUrl,
+      });
+
+      if (!url || (!url.startsWith("https://checkout.stripe.com/") && !url.startsWith("https://pay.stripe.com/"))) {
+        throw new Error("Invalid checkout URL returned by server.");
+      }
+      window.location.assign(url);
+    } catch (error) {
+      toast({
+        title: "Checkout failed",
+        description: error instanceof Error ? error.message : "Unable to start secure checkout.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingPlan(null);
+    }
+  };
+
   return (
     <section className="py-28 relative">
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent" />
@@ -125,13 +184,15 @@ const Pricing = () => {
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
+                onClick={() => handlePlanAction(plan.id)}
+                disabled={isLoadingPlan === plan.id}
                 className={`w-full py-3.5 rounded-lg font-display font-semibold text-sm transition-all ${
                   plan.highlighted
                     ? "bg-primary text-primary-foreground glow-gold"
                     : "border border-border bg-secondary text-secondary-foreground hover:border-primary/40"
-                }`}
+                } disabled:opacity-60 disabled:cursor-not-allowed`}
               >
-                {plan.cta}
+                {isLoadingPlan === plan.id ? "Redirecting..." : plan.cta}
               </motion.button>
             </motion.div>
           ))}

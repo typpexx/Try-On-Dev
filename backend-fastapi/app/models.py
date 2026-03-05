@@ -71,6 +71,8 @@ class User(Base):
     status: Mapped[UserStatus] = mapped_column(Enum(UserStatus), default=UserStatus.ACTIVE)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     google_id: Mapped[str | None] = mapped_column(String(128), nullable=True, unique=True, index=True)  # for Google auth
+    stripe_customer_id: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
+    stripe_subscription_id: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
 
     try_ons: Mapped[list["TryOnRecord"]] = relationship(back_populates="user")
 

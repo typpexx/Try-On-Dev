@@ -10,3 +10,4 @@ bcrypt>=4.0,<5
 httpx
 google-auth
 requests
+stripe>=10.0,<16

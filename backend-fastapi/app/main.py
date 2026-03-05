@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import router
 from app.api.auth import router as auth_router
+from app.api.payments import router as payments_router
 from app.core.config import settings
 from app.db.base import Base
 from app.db.session import engine, SessionLocal
@@ -66,3 +67,4 @@ def seed_defaults():
 
 app.include_router(router, prefix=settings.api_v1_prefix)
 app.include_router(auth_router, prefix=settings.api_v1_prefix)
+app.include_router(payments_router, prefix=settings.api_v1_prefix)
