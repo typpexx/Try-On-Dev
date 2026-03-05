@@ -35,7 +35,7 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="container mx-auto max-w-3xl px-6 py-10">
+    <div className="container mx-auto max-w-3xl px-6 py-20">
       <h1 className="text-3xl font-bold">User Profile</h1>
       <p className="mt-2 text-muted-foreground">
         Upload your photo and body measurements for better virtual try-on personalization.

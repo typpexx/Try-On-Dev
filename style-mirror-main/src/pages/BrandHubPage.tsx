@@ -33,7 +33,7 @@ const BrandHubPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-6 py-10">
+    <div className="container mx-auto px-6 py-20">
       <div className="mb-8 flex flex-col gap-2">
         <h1 className="text-3xl font-bold">Brand Hub</h1>
         <p className="text-muted-foreground">

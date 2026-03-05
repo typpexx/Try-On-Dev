@@ -53,7 +53,7 @@ const TryOnStudioPage = () => {
   };
 
   return (
-    <div className="container mx-auto px-6 py-10">
+    <div className="container mx-auto px-6 py-20">
       <h1 className="text-3xl font-bold">AI Try-On Studio</h1>
       <p className="mt-2 text-muted-foreground">
         MVP flow: user photo + product image {"->"} body/cloth blend preview, then saved to history.

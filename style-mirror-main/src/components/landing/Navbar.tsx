@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { Sun, Moon, LogOut, User } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { googleLogout } from "@react-oauth/google";
 import { useTheme } from "@/components/ThemeProvider";
 import { useAuth } from "@/contexts/AuthContext";
@@ -17,7 +17,6 @@ const Navbar = () => {
   const [open, setOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const { user, isAuthenticated, logout } = useAuth();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     try {
@@ -26,7 +25,8 @@ const Navbar = () => {
       // ignore if Google OAuth not loaded
     }
     logout();
-    navigate("/");
+    // Use window.location for redirect to avoid useNavigate outside router context
+    window.location.href = "/";
   };
 
   return (
@@ -41,7 +41,7 @@ const Navbar = () => {
         </Link>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-body text-muted-foreground">
-          <a href="/#how" className="hover:text-foreground transition-colors">How It Works</a>
+          <Link to="/" className="hover:text-foreground transition-colors">How It Works</Link>
           <Link to="/brands" className="hover:text-foreground transition-colors">Brand Hub</Link>
           <Link to="/try-on" className="hover:text-foreground transition-colors">Try-On Studio</Link>
           <Link to="/history" className="hover:text-foreground transition-colors">History</Link>
