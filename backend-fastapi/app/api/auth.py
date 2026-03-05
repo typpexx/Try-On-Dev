@@ -38,10 +38,24 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="An account with this email already exists.",
         )
+
+    # Workaround: Truncate password to 72 bytes before hashing due to bcrypt's limit.
+    # Passlib/bcrypt backend will raise ValueError if password exceeds 72 bytes.
+    password = payload.password
+    if isinstance(password, str):
+        password_bytes = password.encode("utf-8")
+        if len(password_bytes) > 72:
+            password_bytes = password_bytes[:72]
+            password = password_bytes.decode("utf-8", errors="ignore")
+    else:
+        # Should not happen -- password should be str, but fallback just in case
+        if len(password) > 72:
+            password = password[:72]
+
     user = User(
         email=payload.email,
         full_name=payload.full_name,
-        password_hash=hash_password(payload.password),
+        password_hash=hash_password(password),
     )
     db.add(user)
     db.commit()

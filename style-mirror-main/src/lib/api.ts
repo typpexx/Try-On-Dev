@@ -31,6 +31,7 @@ export async function register(
   password: string,
   fullName: string
 ): Promise<TokenResponse> {
+  console.log(email, password, fullName);
   const res = await fetch(`${API_V1}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

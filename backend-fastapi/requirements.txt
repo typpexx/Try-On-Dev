@@ -6,7 +6,7 @@ pydantic-settings
 python-multipart
 email-validator
 python-jose[cryptography]
-passlib[bcrypt]
+bcrypt>=4.0,<5
 httpx
 google-auth
 requests
