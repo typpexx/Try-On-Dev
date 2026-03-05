@@ -1,14 +1,32 @@
-from fastapi import APIRouter, Depends, Header, HTTPException, status
+from datetime import datetime
+from html import escape
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
+from fastapi.responses import HTMLResponse
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
+from app.core.email_verification import (
+    generate_verification_token,
+    hash_verification_token,
+    send_verification_email,
+)
 from app.core.security import create_access_token, hash_password, verify_password
 from app.db.session import get_db
 from app.models import User
-from app.schemas import GoogleLoginRequest, LoginRequest, RegisterRequest, TokenResponse, UserOut
+from app.schemas import (
+    EmailVerificationRequest,
+    GoogleLoginRequest,
+    LoginRequest,
+    MessageResponse,
+    RegisterRequest,
+    RegisterResponse,
+    TokenResponse,
+    UserOut,
+)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -30,7 +48,7 @@ def user_to_out(user: User) -> UserOut:
     )
 
 
-@router.post("/register", response_model=TokenResponse)
+@router.post("/register", response_model=RegisterResponse)
 def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     existing = db.scalar(select(User).where(User.email == payload.email))
     if existing:
@@ -50,12 +68,20 @@ def register(payload: RegisterRequest, db: Session = Depends(get_db)):
     except ValueError as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e)) from e
 
-    user = User(email=payload.email, full_name=payload.full_name, password_hash=password_hash)
+    token, token_hash, expires_at = generate_verification_token()
+    user = User(
+        email=payload.email,
+        full_name=payload.full_name,
+        password_hash=password_hash,
+        email_verified=False,
+        email_verification_token_hash=token_hash,
+        email_verification_expires_at=expires_at,
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
-    access_token = create_access_token(subject=user.id)
-    return TokenResponse(access_token=access_token, user=user_to_out(user))
+    send_verification_email(user, token)
+    return RegisterResponse(message="Account created. Please verify your email from the link we sent.")
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -70,6 +96,11 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password.",
+        )
+    if not user.email_verified:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Please verify your email before signing in.",
         )
     if user.status.value != "active":
         raise HTTPException(
@@ -126,6 +157,8 @@ def google_login(payload: GoogleLoginRequest, db: Session = Depends(get_db)):
                     full_name=name,
                     google_id=google_id,
                     password_hash=None,
+                    email_verified=True,
+                    email_verified_at=datetime.utcnow(),
                 )
                 db.add(user)
                 db.commit()
@@ -144,6 +177,70 @@ def google_login(payload: GoogleLoginRequest, db: Session = Depends(get_db)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Login failed: {str(e)}",
         ) from e
+
+
+def _verify_email_token(token: str, db: Session) -> str:
+    token_hash = hash_verification_token(token)
+    user = db.scalar(select(User).where(User.email_verification_token_hash == token_hash))
+    if not user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification token.")
+
+    if user.email_verified:
+        return "Email already verified. You can sign in."
+
+    if not user.email_verification_expires_at or user.email_verification_expires_at < datetime.utcnow():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification token has expired.")
+
+    user.email_verified = True
+    user.email_verified_at = datetime.utcnow()
+    user.email_verification_token_hash = None
+    user.email_verification_expires_at = None
+    db.commit()
+    return "Email verified successfully. You can sign in now."
+
+
+@router.get("/verify-email", response_class=HTMLResponse)
+def verify_email(token: str = Query(...), db: Session = Depends(get_db)):
+    try:
+        message = _verify_email_token(token, db)
+        safe = escape(message)
+        return HTMLResponse(
+            content=(
+                "<html><body style='font-family:Arial,sans-serif;padding:24px'>"
+                "<h2>Email Verification</h2>"
+                f"<p>{safe}</p>"
+                "</body></html>"
+            )
+        )
+    except HTTPException as exc:
+        safe = escape(str(exc.detail))
+        return HTMLResponse(
+            status_code=exc.status_code,
+            content=(
+                "<html><body style='font-family:Arial,sans-serif;padding:24px'>"
+                "<h2>Email Verification</h2>"
+                f"<p>{safe}</p>"
+                "</body></html>"
+            ),
+        )
+
+
+@router.post("/verify-email/resend", response_model=MessageResponse)
+def resend_verification_email(payload: EmailVerificationRequest, db: Session = Depends(get_db)):
+    user = db.scalar(select(User).where(User.email == payload.email))
+    # Avoid account enumeration.
+    if not user:
+        return MessageResponse(message="If your account exists, a verification email has been sent.")
+
+    if user.email_verified:
+        return MessageResponse(message="Email already verified. You can sign in.")
+
+    token, token_hash, expires_at = generate_verification_token()
+    user.email_verification_token_hash = token_hash
+    user.email_verification_expires_at = expires_at
+    db.commit()
+    send_verification_email(user, token)
+    return MessageResponse(message="If your account exists, a verification email has been sent.")
 
 
 def _get_bearer_token(authorization: str | None = Header(None)) -> str | None:

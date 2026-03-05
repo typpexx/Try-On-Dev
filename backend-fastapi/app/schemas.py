@@ -96,6 +96,18 @@ class TokenResponse(BaseModel):
     user: UserOut
 
 
+class RegisterResponse(BaseModel):
+    message: str
+
+
+class MessageResponse(BaseModel):
+    message: str
+
+
+class EmailVerificationRequest(BaseModel):
+    email: EmailStr
+
+
 class TryOnCreate(BaseModel):
     user_id: int
     brand_id: int

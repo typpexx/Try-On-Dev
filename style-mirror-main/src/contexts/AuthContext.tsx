@@ -74,10 +74,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(
     async (email: string, password: string, fullName: string) => {
-      const data = await apiRegister(email, password, fullName);
-      applyAuth(data);
+      await apiRegister(email, password, fullName);
     },
-    [applyAuth]
+    []
   );
 
   const loginWithGoogle = useCallback(

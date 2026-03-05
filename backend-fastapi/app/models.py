@@ -73,6 +73,10 @@ class User(Base):
     google_id: Mapped[str | None] = mapped_column(String(128), nullable=True, unique=True, index=True)  # for Google auth
     stripe_customer_id: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
     stripe_subscription_id: Mapped[str | None] = mapped_column(String(128), nullable=True, index=True)
+    email_verified: Mapped[bool] = mapped_column(Boolean, default=True)
+    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    email_verification_token_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
+    email_verification_expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
     try_ons: Mapped[list["TryOnRecord"]] = relationship(back_populates="user")
 

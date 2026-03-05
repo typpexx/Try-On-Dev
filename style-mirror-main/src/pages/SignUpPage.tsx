@@ -30,10 +30,10 @@ export default function SignUpPage() {
       });
       return;
     }
-    if (password.length < 6) {
+    if (password.length < 8) {
       toast({
         title: "Password too short",
-        description: "Use at least 6 characters.",
+        description: "Use at least 8 characters.",
         variant: "destructive",
       });
       return;
@@ -49,8 +49,11 @@ export default function SignUpPage() {
     setLoading(true);
     try {
       await register(email.trim(), password, fullName.trim());
-      toast({ title: "Account created", description: "Welcome to TryOn.ai!" });
-      navigate("/brands", { replace: true });
+      toast({
+        title: "Check your email",
+        description: "Account created. Click the verification link in your email before signing in.",
+      });
+      navigate("/sign-in", { replace: true });
     } catch (err) {
       toast({
         title: "Sign up failed",
@@ -119,7 +122,7 @@ export default function SignUpPage() {
               <Input
                 id="password"
                 type="password"
-                placeholder="At least 6 characters"
+                placeholder="At least 8 characters"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="mt-2"

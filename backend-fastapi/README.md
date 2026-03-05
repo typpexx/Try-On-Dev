@@ -67,7 +67,9 @@ All endpoints are under: `/api/v1`
 
 ### Auth Endpoints
 
-- `POST /api/v1/auth/register` — body: `{ "email", "password", "full_name" }`
+- `POST /api/v1/auth/register` — body: `{ "email", "password", "full_name" }` (creates account + sends verification email)
+- `GET /api/v1/auth/verify-email?token=...` — verifies email from the unique link
+- `POST /api/v1/auth/verify-email/resend` — body: `{ "email" }` (resends verification link)
 - `POST /api/v1/auth/login` — body: `{ "email", "password" }`
 - `POST /api/v1/auth/google` — body: `{ "id_token" }` (Google Sign-In)
 - `GET /api/v1/auth/me` — header: `Authorization: Bearer <token>`
@@ -86,6 +88,9 @@ Users have: `email`, `full_name`, `role`, `api_key`, `subscription_status` (star
 
 - `SECRET_KEY` — used for JWT signing (set in production).
 - `GOOGLE_CLIENT_ID` — Google OAuth 2.0 Client ID (Web) for Google Sign-In. Create at [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+- `BACKEND_PUBLIC_URL` — public backend URL used in verification links.
+- `EMAIL_VERIFICATION_EXPIRE_MINUTES` — verification token lifetime in minutes.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`, `SMTP_USE_TLS` — SMTP config for sending verification emails.
 - `STRIPE_SECRET_KEY` — Stripe secret key (`sk_test_...` / `sk_live_...`).
 - `STRIPE_WEBHOOK_SECRET` — webhook signing secret (`whsec_...`).
 - `STRIPE_PRICE_ID_PRO` / `STRIPE_PRICE_ID_PRO_YEARLY` — Stripe recurring price IDs.
@@ -119,6 +124,12 @@ If you already had a `users` table before Stripe fields were added, run:
 
 ```powershell
 python run_migrate_stripe_columns.py
+```
+
+If your `users` table already exists before email verification fields were added, run:
+
+```powershell
+python run_migrate_email_verification_columns.py
 ```
 
 ## Notes

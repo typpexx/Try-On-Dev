@@ -26,11 +26,15 @@ export interface TokenResponse {
   user: AuthUser;
 }
 
+export interface MessageResponse {
+  message: string;
+}
+
 export async function register(
   email: string,
   password: string,
   fullName: string
-): Promise<TokenResponse> {
+): Promise<MessageResponse> {
   const res = await fetch(`${API_V1}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

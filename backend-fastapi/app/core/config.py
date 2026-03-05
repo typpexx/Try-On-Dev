@@ -15,6 +15,14 @@ class Settings(BaseSettings):
     jwt_algorithm: str = os.getenv("JWT_ALGORITHM")
     jwt_expire_minutes: int = 60 * 24 * 7  # 7 days
     google_client_id: str = os.getenv("GOOGLE_CLIENT_ID")
+    backend_public_url: str = os.getenv("BACKEND_PUBLIC_URL", "http://localhost:8000")
+    email_verification_expire_minutes: int = int(os.getenv("EMAIL_VERIFICATION_EXPIRE_MINUTES", "60"))
+    smtp_host: str = os.getenv("SMTP_HOST", "")
+    smtp_port: int = int(os.getenv("SMTP_PORT", "587"))
+    smtp_username: str = os.getenv("SMTP_USERNAME", "")
+    smtp_password: str = os.getenv("SMTP_PASSWORD", "")
+    smtp_from_email: str = os.getenv("SMTP_FROM_EMAIL", "")
+    smtp_use_tls: bool = os.getenv("SMTP_USE_TLS", "true").lower() == "true"
     # Stripe (set in .env for payments)
     stripe_secret_key: str = os.getenv("STRIPE_SECRET_KEY")
     stripe_webhook_secret: str = os.getenv("STRIPE_WEBHOOK_SECRET")
