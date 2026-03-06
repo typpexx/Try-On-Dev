@@ -37,7 +37,7 @@ const Navbar = () => {
     >
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         <Link to="/" className="text-xl font-display font-bold text-gradient-gold tracking-tight">
-          TryOn<span className="text-foreground">.ai</span>
+          tryons<span className="text-foreground">.ai</span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-body text-muted-foreground">
