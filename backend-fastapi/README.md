@@ -89,7 +89,9 @@ Users have: `email`, `full_name`, `role`, `api_key`, `subscription_status` (star
 - `SECRET_KEY` — used for JWT signing (set in production).
 - `GOOGLE_CLIENT_ID` — Google OAuth 2.0 Client ID (Web) for Google Sign-In. Create at [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
 - `BACKEND_PUBLIC_URL` — public backend URL used in verification links.
+- `FRONTEND_PUBLIC_URL` — frontend base URL used for redirects after verification (e.g. to `/sign-in`).
 - `EMAIL_VERIFICATION_EXPIRE_MINUTES` — verification token lifetime in minutes.
+- `RESEND_API_KEY`, `RESEND_FROM_EMAIL` — Resend.com email delivery (recommended). If set, backend sends verification emails via Resend.
 - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM_EMAIL`, `SMTP_USE_TLS` — SMTP config for sending verification emails.
 - `STRIPE_SECRET_KEY` — Stripe secret key (`sk_test_...` / `sk_live_...`).
 - `STRIPE_WEBHOOK_SECRET` — webhook signing secret (`whsec_...`).

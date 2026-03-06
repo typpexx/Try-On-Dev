@@ -14,6 +14,7 @@ import TryOnStudioPage from "./pages/TryOnStudioPage";
 import TryOnHistoryPage from "./pages/TryOnHistoryPage";
 import SignInPage from "./pages/SignInPage";
 import SignUpPage from "./pages/SignUpPage";
+import AuthCallbackPage from "./pages/AuthCallbackPage";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Navbar from "./components/landing/Navbar";
@@ -31,6 +32,7 @@ const AppRoutes = () => (
       <Route path="/history" element={<ProtectedRoute><TryOnHistoryPage /></ProtectedRoute>} />
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/sign-up" element={<SignUpPage />} />
+      <Route path="/auth/callback" element={<AuthCallbackPage />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </BrowserRouter>

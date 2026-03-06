@@ -47,6 +47,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, fullName: string) => Promise<void>;
   loginWithGoogle: (idToken: string) => Promise<void>;
+  loginWithToken: (accessToken: string) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
 }
@@ -83,6 +84,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (idToken: string) => {
       const data = await apiGoogleLogin(idToken);
       applyAuth(data);
+    },
+    [applyAuth]
+  );
+
+  const loginWithToken = useCallback(
+    async (accessToken: string) => {
+      const user = await getMe(accessToken);
+      applyAuth({ access_token: accessToken, token_type: "bearer", user });
     },
     [applyAuth]
   );
@@ -134,6 +143,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     register,
     loginWithGoogle,
+    loginWithToken,
     logout,
     refreshUser,
   };

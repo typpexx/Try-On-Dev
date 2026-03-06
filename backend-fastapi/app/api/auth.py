@@ -1,8 +1,8 @@
 from datetime import datetime
-from html import escape
+from urllib.parse import urlencode
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import RedirectResponse
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 from sqlalchemy import select
@@ -186,7 +186,7 @@ def _verify_email_token(token: str, db: Session) -> str:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid verification token.")
 
     if user.email_verified:
-        return "Email already verified. You can sign in."
+        return "already_verified"
 
     if not user.email_verification_expires_at or user.email_verification_expires_at < datetime.utcnow():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification token has expired.")
@@ -196,33 +196,41 @@ def _verify_email_token(token: str, db: Session) -> str:
     user.email_verification_token_hash = None
     user.email_verification_expires_at = None
     db.commit()
-    return "Email verified successfully. You can sign in now."
+    return "success"
 
 
-@router.get("/verify-email", response_class=HTMLResponse)
+@router.get("/verify-email")
 def verify_email(token: str = Query(...), db: Session = Depends(get_db)):
+    base = settings.frontend_public_url.rstrip("/")
+    path = (settings.frontend_verification_redirect_path or "/brands").strip()
+    if not path.startswith("/"):
+        path = "/" + path
+
+    def redirect_to_signin(verification: str) -> RedirectResponse:
+        url = f"{base}/sign-in?{urlencode({'verification': verification})}"
+        return RedirectResponse(url=url, status_code=302)
+
+    def redirect_logged_in(user: User) -> RedirectResponse:
+        access_token = create_access_token(subject=user.id)
+        url = f"{base}/auth/callback#access_token={access_token}"
+        return RedirectResponse(url=url, status_code=302)
+
     try:
-        message = _verify_email_token(token, db)
-        safe = escape(message)
-        return HTMLResponse(
-            content=(
-                "<html><body style='font-family:Arial,sans-serif;padding:24px'>"
-                "<h2>Email Verification</h2>"
-                f"<p>{safe}</p>"
-                "</body></html>"
-            )
-        )
+        token_hash = hash_verification_token(token)
+        user = db.scalar(select(User).where(User.email_verification_token_hash == token_hash))
+        if not user:
+            return redirect_to_signin("invalid")
+        result = _verify_email_token(token, db)
+        if result in ("success", "already_verified"):
+            return redirect_logged_in(user)
+        return redirect_to_signin(result)
     except HTTPException as exc:
-        safe = escape(str(exc.detail))
-        return HTMLResponse(
-            status_code=exc.status_code,
-            content=(
-                "<html><body style='font-family:Arial,sans-serif;padding:24px'>"
-                "<h2>Email Verification</h2>"
-                f"<p>{safe}</p>"
-                "</body></html>"
-            ),
-        )
+        detail = (exc.detail or "").lower()
+        if "expired" in detail:
+            return redirect_to_signin("expired")
+        if "invalid" in detail:
+            return redirect_to_signin("invalid")
+        return redirect_to_signin("error")
 
 
 @router.post("/verify-email/resend", response_model=MessageResponse)

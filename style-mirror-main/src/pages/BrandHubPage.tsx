@@ -1,11 +1,15 @@
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ExternalLink, Filter, MousePointerClick } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/contexts/AuthContext";
 import { getBrands, getAffiliateClicks, trackAffiliateClick } from "@/lib/platformStore";
 
 const BrandHubPage = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<"all" | "luxury" | "high-street" | "streetwear">("all");
   const brands = getBrands();
@@ -28,6 +32,10 @@ const BrandHubPage = () => {
   }, [clicks]);
 
   const onVisit = (brandId: string, affiliateUrl: string) => {
+    if (!isAuthenticated) {
+      navigate("/sign-in");
+      return;
+    }
     trackAffiliateClick(brandId, "brand-hub");
     window.open(affiliateUrl, "_blank", "noopener,noreferrer");
   };
