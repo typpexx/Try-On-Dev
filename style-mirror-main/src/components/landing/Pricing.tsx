@@ -26,7 +26,7 @@ const plans = [
   {
     id: "pro",
     name: "Pro",
-    price: "$299",
+    price: "$15",
     period: "/month",
     description: "For growing brands ready to boost conversions.",
     features: [

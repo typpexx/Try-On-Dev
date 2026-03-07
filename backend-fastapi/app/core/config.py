@@ -30,8 +30,8 @@ class Settings(BaseSettings):
     # Stripe (set in .env for payments)
     stripe_secret_key: str = os.getenv("STRIPE_SECRET_KEY")
     stripe_webhook_secret: str = os.getenv("STRIPE_WEBHOOK_SECRET")
-    stripe_price_id_pro: str = ""  # Pro monthly price ID
-    stripe_price_id_pro_yearly: str = ""
+    stripe_price_id_pro: str = os.getenv("STRIPE_PRICE_ID_PRO")
+    stripe_price_id_pro_yearly: str = os.getenv("STRIPE_PRICE_ID_PRO_YEARLY")
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
